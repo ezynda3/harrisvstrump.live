@@ -101,13 +101,8 @@ func (c *IndexController) GetUpdates(e *core.RequestEvent) error {
 			c.resultsMutex.Lock()
 			if c.results[result.StateName].Democrat != result.Democrat ||
 				c.results[result.StateName].Republican != result.Republican {
-				datastar.Console(
-					sse,
-					datastar.ConsoleLogModeInfo,
-					"!!!Score has changed!!!",
-				)
 				tID := randstr.Hex(4)
-				datastar.RenderFragmentTempl(
+				_ = datastar.RenderFragmentTempl(
 					sse,
 					views.Toast(
 						tID,
