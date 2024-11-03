@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, sans-serif;
+  font-feature-settings: "liga" 1, "calt" 1;
+  /* fix for Chrome */
+}
+
+@supports (font-variation-settings: normal) {
+  :root {
+    font-family: InterVariable, sans-serif;
+  }
+}
+
+.democrat-winner {
+  @apply fill-blue-700 hover:fill-blue-400
+}
+
+.republican-winner {
+  @apply fill-red-700 hover:fill-red-400
+}
+
+.lvl-50 {
+  @apply opacity-50;
+}
+
+.lvl-60 {
+  @apply opacity-60;
+}
+
+.lvl-70 {
+  @apply opacity-70;
+}
+
+.lvl-80 {
+  @apply opacity-80;
+}
+
+.lvl-90 {
+  @apply opacity-90;
+}
+
+.bg-image-left {
+  background-image: url('/static/img/harris-pose.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.bg-image-right {
+  background-image: url('/static/img/trump-pose.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.street-fighter-score {
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  -webkit-text-stroke: 2px black;
+}

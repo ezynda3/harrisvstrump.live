@@ -1,0 +1,133 @@
+package views
+
+import (
+	"fmt"
+	"git.mark3labs.com/harrisvstrump/types"
+	"github.com/delaneyj/datastar"
+	"math"
+)
+
+templ Layout(sInfo map[string]types.Result) {
+	<!DOCTYPE html>
+	<html lang="en" class="dark uk-theme-rose">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width"/>
+			<title>Kamala Harris vs Donald Trump - LIVE!</title>
+			<link rel="preconnect" href="https://rsms.me/"/>
+			<link rel="stylesheet" href="https://rsms.me/inter/inter.css"/>
+			<!-- For stability in production, it's recommended that you hardcode the latest version in the CDN link. -->
+			<link rel="stylesheet" href="/static/styles.css"/>
+			<script type="module" src="/static/app.js"></script>
+		</head>
+		<body
+			class="bg-background"
+			data-on-load={ datastar.GET("/updates") }
+			data-store='{"stateName": "", "dScore": 0, "rScore": 0}'
+		>
+			<!-- START CODING HERE -->
+			<nav class="uk-navbar-container">
+				<div class="uk-container">
+					<div uk-navbar>
+						<!-- Left Side -->
+						<div class="uk-navbar-left">
+							<a class="uk-navbar-item font-bold text-white text-xl uppercase" href="/" aria-label="Back to Home">
+								Harris vs Trump <span class="uk-label bg-red-700">LIVE</span>
+							</a>
+						</div>
+						<!-- Right Side -->
+						<div class="uk-navbar-right">
+							<ul class="uk-navbar-nav">
+								<li>
+									<!-- <a href="#">Github</a> -->
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</nav>
+			<main class="container mx-auto h-[65vh] flex gap-4 my-24 py-24">
+				<div class="flex-1 bg-image-left p-4 h-full w-full">
+					<div class="flex flex-col justify-center items-center h-full">
+						@Score(sInfo["national"].Democrat, "harris-score")
+					</div>
+				</div>
+				<div class="flex-2 h-full w-full flex flex-col gap-4">
+					<div class="uk-card uk-card-body uk-card-default mx-auto">
+						<h3 class="uk-card-title">WTF Is This?</h3>
+						<p class="uk-margin">
+							This is a live updating map showing results from the US Presidential
+							election prediction markets on <a class="underline" href="https://polymarket.com/elections" target="_blank">Polymarket</a>.
+						</p>
+					</div>
+					@Map(sInfo)
+					<div data-ref="details" id="details" class="hidden uk-card uk-card-body uk-card-secondary absolute">
+						<h3 class="uk-card-title capitalize" data-text="$stateName"></h3>
+						<div class="uk-margin w-[20vw] flex flex-col gap-4">
+							<div>
+								Kamala Harris
+								<div class="w-full bg-gray-200 rounded-full dark:bg-gray-700">
+									<div
+										class="bg-blue-500 text-xs font-medium text-white text-center p-0.5 leading-none rounded-full uk-animation-slide-left-small"
+										data-bind-style="`width: ${$dScore}%`"
+										data-text="$dScore + '%'"
+									></div>
+								</div>
+							</div>
+							<div>
+								Donald Trump
+								<div class="w-full bg-gray-200 rounded-full dark:bg-gray-700">
+									<div
+										class="bg-red-500 text-xs font-medium text-white text-center p-0.5 leading-none rounded-full uk-animation-slide-left-small"
+										data-bind-style="`width: ${$rScore}%`"
+										data-text="$rScore + '%'"
+									></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="flex-1 bg-image-right p-4 h-full w-full">
+					<div class="flex flex-col justify-center items-center h-full">
+						@Score(sInfo["national"].Republican, "trump-score")
+					</div>
+				</div>
+			</main>
+			<!-- END -->
+			<div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-1"></div>
+		</body>
+	</html>
+}
+
+templ Score(score float64, id string) {
+	<div id={ id } class="street-fighter-score font-bold text-yellow-400 text-5xl" aria-label="Trump Score">{ fmt.Sprintf("%v%%", roundFloat(score, 2)) }</div>
+}
+
+templ Toast(id, state string, d float64, r float64) {
+	<div
+		id={ "toast" + id }
+		if d > r {
+			class="uk-alert bg-blue-700 text-foreground"
+		} else {
+			class="uk-alert bg-red-700 text-foreground"
+		}
+		uk-alert
+		data-on-load={ fmt.Sprintf("setTimeout(() => { document.getElementById('cls%v').click() }, 3000)", id) }
+	>
+		<a href id={ fmt.Sprintf("cls%v", id) } class="uk-alert-close" uk-close></a>
+		<div class="uk-alert-description mx-auto px-5">
+			<h3 class="capitalize font-bold text-xl">{ state }</h3>
+			<div>
+				<strong>Harris</strong> { fmt.Sprintf("%v%%", roundFloat(d, 2)) }
+			</div>
+			<div>
+				<strong>Trump</strong> { fmt.Sprintf("%v%%", roundFloat(r, 2)) }
+			</div>
+		</div>
+	</div>
+}
+
+func roundFloat(val float64, precision uint) float64 {
+	ratio := math.Pow(10, float64(precision))
+	return math.Round(val*ratio) / ratio
+}

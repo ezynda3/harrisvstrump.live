@@ -1,0 +1,92 @@
+version: '3'
+
+env:
+  STATIC_DIR: 'static'
+
+tasks:
+  build:templ:
+    cmds:
+      - go run github.com/a-h/templ/cmd/templ@v0.2.778 generate -v
+
+  build:styles:
+    cmds:
+      - bunx tailwindcss -c tailwind.config.js -i assets/styles.css -o $STATIC_DIR/styles.css
+
+  build:ts:
+    cmds:
+      - bun build assets/app.ts --outdir=$STATIC_DIR
+
+  # build:lit-html:
+  #   cmds:
+  #     - pnpm -r --filter=lit-html build
+
+  build:
+    cmds:
+      - go build -o bin/main .
+    deps:
+      - build:styles
+      - build:templ
+      # - build:lit-html
+      - build:bun
+    parallel: true
+
+  debug:
+    cmds:
+      - go run github.com/go-delve/delve/cmd/dlv@v1.23.1 exec ./bin/main
+    deps:
+      - build
+
+  live:templ:
+    cmds:
+      - go run github.com/a-h/templ/cmd/templ@v0.2.778 generate --watch --proxy="http://localhost:8090" --open-browser=false -v
+
+  live:styles:
+    cmds:
+      - bunx tailwindcss -c tailwind.config.js -i assets/styles.css -o $STATIC_DIR/styles.css --watch
+
+  live:bun:
+    cmds:
+      - bun build assets/app.ts --outdir=$STATIC_DIR --watch
+
+  # live:lit-html:
+  #   cmds:
+  #     - pnpm -r --filter=lit-html build:dev
+
+  live:server:
+    cmds:
+      - |
+        go run github.com/air-verse/air@v1.52.3 \
+        --build.cmd "go build -tags dev -o tmp/bin/main" \
+        --build.bin "tmp/bin/main serve --dir=pb_data" \
+        --build.delay "20" \
+        --build.exclude_dir "node_modules,data,public" \
+        --build.include_ext "go" \
+        --build.stop_on_error "false" \
+        --misc.clean_on_exit true
+
+  live:sync_static:
+    cmds:
+      - |
+        go run github.com/air-verse/air@v1.52.3 \
+        --build.cmd "go run github.com/a-h/templ/cmd/templ@v0.2.778 generate --notify-proxy" \
+        --build.bin "true" \
+        --build.delay "100" \
+        --build.exclude_dir "" \
+        --build.include_dir "$STATIC_DIR" \
+        --build.include_ext "js,css"
+
+  live:
+    deps:
+      - live:templ
+      - live:server
+      - live:styles
+      # - live:lit-html
+      - live:bun
+      - live:sync_static
+    parallel: true
+
+  run:
+    cmds:
+      - ./bin/main
+    deps:
+      - build
