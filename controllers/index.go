@@ -69,7 +69,11 @@ func (c *IndexController) ShowIndex(e *core.RequestEvent) error {
 }
 
 func (c *IndexController) GetUpdates(e *core.RequestEvent) error {
-	w, err := c.kv.Watch(e.Request.Context(), "result.*")
+	w, err := c.kv.Watch(
+		e.Request.Context(),
+		"result.*",
+		jetstream.UpdatesOnly(),
+	)
 	if err != nil {
 		return err
 	}
