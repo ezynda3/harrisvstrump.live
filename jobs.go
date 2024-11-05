@@ -35,7 +35,7 @@ func setupJobs(app *pocketbase.PocketBase, nc *nats.Conn) {
 			Bucket:      "updates",
 			Description: "Updates",
 			Compression: true,
-			TTL:         1 * time.Minute,
+			TTL:         10 * time.Second,
 		},
 	)
 	if err != nil {
